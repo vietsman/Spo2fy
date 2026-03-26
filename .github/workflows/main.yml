@@ -1,33 +1,42 @@
-name: Combine Files
+name: Combine src Files & Upload Release
 
 on:
   workflow_dispatch:
   push:
+    tags:
+      - "v*"   # triggers on version tags like v1.0.0
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write   # required to create releases
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Combine files
+      - name: Combine files from src
         run: |
           ROOT_PATH="$PWD/src"
           OUTPUT_FILE="$PWD/src.txt"
 
+          # overwrite output
           > "$OUTPUT_FILE"
 
+          # combine all files recursively with headers
           find "$ROOT_PATH" -type f | sort | while read -r file; do
-            rel="${file#$ROOT_PATH/}"
+            rel="${file#$PWD/}"           # relative to repo root
             echo "====== $rel ======" >> "$OUTPUT_FILE"
             cat "$file" >> "$OUTPUT_FILE"
             echo "" >> "$OUTPUT_FILE"
           done
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Create Release & upload src.txt
+        uses: softprops/action-gh-release@v2
         with:
-          name: combined-files
-          path: src.txt
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          files: src.txt
+          overwrite_files: true
