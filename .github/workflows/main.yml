@@ -1,0 +1,33 @@
+name: Combine Files
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Combine files
+        run: |
+          ROOT_PATH="$PWD/subfolder"
+          OUTPUT_FILE="$ROOT_PATH/src.txt"
+
+          > "$OUTPUT_FILE"
+
+          find "$ROOT_PATH" -type f | sort | while read -r file; do
+            rel="${file#$ROOT_PATH/}"
+            echo "====== $rel ======" >> "$OUTPUT_FILE"
+            cat "$file" >> "$OUTPUT_FILE"
+            echo "" >> "$OUTPUT_FILE"
+          done
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: combined-files
+          path: subfolder/src.txt
