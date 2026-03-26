@@ -14,8 +14,8 @@ jobs:
 
       - name: Combine files
         run: |
-          ROOT_PATH="$PWD/subfolder"
-          OUTPUT_FILE="$ROOT_PATH/src.txt"
+          ROOT_PATH="$PWD/src"
+          OUTPUT_FILE="$PWD/src.txt"
 
           > "$OUTPUT_FILE"
 
@@ -30,4 +30,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: combined-files
-          path: subfolder/src.txt
+          path: src.txt
