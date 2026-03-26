@@ -1,4 +1,4 @@
-name: Combine src Files & Upload Release
+name: Combine src & assets Files & Upload Release
 
 on:
   workflow_dispatch:
@@ -17,20 +17,25 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Combine files from src
+      - name: Combine files from src and assets
         run: |
-          ROOT_PATH="$PWD/src"
+          # Set folders
+          FOLDERS=("src" "assets")
           OUTPUT_FILE="$PWD/src.txt"
 
           # overwrite output
           > "$OUTPUT_FILE"
 
-          # combine all files recursively with headers
-          find "$ROOT_PATH" -type f | sort | while read -r file; do
-            rel="${file#$PWD/}"           # relative to repo root
-            echo "====== $rel ======" >> "$OUTPUT_FILE"
-            cat "$file" >> "$OUTPUT_FILE"
-            echo "" >> "$OUTPUT_FILE"
+          for ROOT_PATH in "${FOLDERS[@]}"; do
+            if [ -d "$PWD/$ROOT_PATH" ]; then
+              find "$PWD/$ROOT_PATH" -type f | sort | while read -r file; do
+                # relative path from repo root
+                rel="${file#$PWD/}"
+                echo "====== $rel ======" >> "$OUTPUT_FILE"
+                cat "$file" >> "$OUTPUT_FILE"
+                echo "" >> "$OUTPUT_FILE"
+              done
+            fi
           done
 
       - name: Create Release & upload src.txt
